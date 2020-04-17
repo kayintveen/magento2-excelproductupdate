@@ -1,0 +1,40 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
+    <system>
+        <tab id="microdesign" translate="label" sortOrder="1000">
+            <label>Microdesign</label>
+        </tab>
+        <section id="microdesign" translate="label" type="text" sortOrder="100" showInDefault="1" showInWebsite="1" showInStore="1">
+            <label>Microdesign Product</label>
+            <tab>microdesign</tab>
+            <resource>Microdesign_ExcelProductUpdate::config</resource>
+            <group id="product" translate="label" type="text" sortOrder="6" showInDefault="1" showInWebsite="0" showInStore="0" >
+                <label>Product attributes setup</label>
+                <field id="import_attributes" type="multiselect" translate="label" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1" >
+                    <label>Attributes</label>
+                    <source_model>Microdesign\ExcelProductUpdate\Model\Source\Attributes</source_model>
+                </field>
+            </group>
+            <group id="import" translate="label" type="text" sortOrder="6" showInDefault="1" showInWebsite="0" showInStore="0" >
+                <label>Product import</label>
+                <field id="import_file" translate="label" type="Magento\Config\Block\System\Config\Form\Field\File" sortOrder="6" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Import file</label>
+                    <backend_model>\Microdesign\ExcelProductUpdate\Model\Config\Backend\ImportFile</backend_model>
+                    <upload_dir>upload</upload_dir>
+                </field>
+            </group>
+            <group id="export" translate="label" type="text" sortOrder="6" showInDefault="1" showInWebsite="0" showInStore="0" >
+                <label>Product export</label>
+                <field id="configurable" type="select" translate="label" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1" >
+                    <label>Only Configurable</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="export_products" translate="label" type="button" sortOrder="13" showInDefault="1"
+                       showInWebsite="0" showInStore="1">
+                    <label>Export products to CSV</label>
+                    <frontend_model>Microdesign\ExcelProductUpdate\Block\Adminhtml\System\Config\Form\Export</frontend_model>
+                </field>
+            </group>
+        </section>
+    </system>
+</config>

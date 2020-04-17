@@ -1,0 +1,12 @@
+<script>
+    require([
+        'jquery',
+        'prototype'
+    ], function (jQuery) {
+        //var resultSpan = jQuery('#result');
+        jQuery('#product_export').click(function () {
+            window.location.href="<?=$block->getAjaxUrl()?>";
+        });
+    });
+</script>
+<?php echo $block->getButtonHtml() ?>
