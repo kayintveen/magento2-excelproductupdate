@@ -2,7 +2,6 @@
     "name": "microdesign/excelproductupdate",
     "description": "Uses Big Bridge importer to update productData via CSV files",
     "require": {
-        "php": "~7.0.0",
         "bigbridge/product-import": "^1.4"
     },
     "type": "magento2-module",
