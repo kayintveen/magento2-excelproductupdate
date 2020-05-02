@@ -8,15 +8,13 @@
             <label>Microdesign Product</label>
             <tab>microdesign</tab>
             <resource>Microdesign_ExcelProductUpdate::config</resource>
-            <group id="product" translate="label" type="text" sortOrder="6" showInDefault="1" showInWebsite="0" showInStore="0" >
-                <label>Product attributes setup</label>
-                <field id="import_attributes" type="multiselect" translate="label" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1" >
-                    <label>Attributes</label>
-                    <source_model>Microdesign\ExcelProductUpdate\Model\Source\Attributes</source_model>
-                </field>
-            </group>
             <group id="import" translate="label" type="text" sortOrder="6" showInDefault="1" showInWebsite="0" showInStore="0" >
                 <label>Product import</label>
+                <field id="key_attribute" type="select" translate="label" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Attribute key</label>
+                    <comment>Select the attribute that is used to identify the product (example, id, sku, barcode)</comment>
+                    <source_model>Microdesign\ExcelProductUpdate\Model\Source\Attributes</source_model>
+                </field>
                 <field id="import_file" translate="label" type="Magento\Config\Block\System\Config\Form\Field\File" sortOrder="6" showInDefault="1" showInWebsite="1" showInStore="0">
                     <label>Import file</label>
                     <backend_model>\Microdesign\ExcelProductUpdate\Model\Config\Backend\ImportFile</backend_model>
@@ -25,6 +23,11 @@
             </group>
             <group id="export" translate="label" type="text" sortOrder="6" showInDefault="1" showInWebsite="0" showInStore="0" >
                 <label>Product export</label>
+                <field id="attributes" type="multiselect" translate="label" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1" >
+                    <label>Attributes</label>
+                    <comment>Select attributes to export</comment>
+                    <source_model>Microdesign\ExcelProductUpdate\Model\Source\Attributes</source_model>
+                </field>
                 <field id="configurable" type="select" translate="label" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1" >
                     <label>Only Configurable</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>

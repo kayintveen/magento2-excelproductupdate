@@ -10,6 +10,8 @@ use BigBridge\ProductImport\Api\Importer;
 use BigBridge\ProductImport\Api\ImporterFactory;
 use Magento\Catalog\Api\ProductRepositoryInterface;
 use Magento\Eav\Model\Attribute;
+use Magento\Framework\Api\SearchCriteriaBuilder;
+use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Message\ManagerInterface;
 
@@ -18,6 +20,8 @@ class ImportProduct
     const DEFAULT_ATTRIBUTES = ["short_description", "description"];
 
     const SKIP_ATTRIBUTES = ["name"];
+
+    const XML_MICRODESIGN_ATTRIBUTE = "microdesign/import/key_attribute";
 
     /**
      * @var \BigBridge\ProductImport\Api\ImporterFactory
@@ -55,6 +59,16 @@ class ImportProduct
     private $selectAttributes;
 
     /**
+     * @var \Magento\Framework\App\Config\ScopeConfigInterface
+     */
+    private $scopeConfig;
+
+    /**
+     * @var \Magento\Framework\Api\SearchCriteriaBuilder
+     */
+    private $searchCriteriaBuilder;
+
+    /**
      * ImportProduct constructor.
      *
      * @param \BigBridge\ProductImport\Api\ImporterFactory              $importerFactory
@@ -62,19 +76,25 @@ class ImportProduct
      * @param \Magento\Framework\Message\ManagerInterface               $messageManager
      * @param \Magento\Catalog\Api\ProductRepositoryInterface           $productRepository
      * @param \Microdesign\ExcelProductUpdate\Service\AttributeSelector $attributeSelector
+     * @param \Magento\Framework\App\Config\ScopeConfigInterface        $scopeConfig
+     * @param \Magento\Framework\Api\SearchCriteriaBuilder              $searchCriteriaBuilder
      */
     public function __construct(
         ImporterFactory $importerFactory,
         ImportConfig $importConfig,
         ManagerInterface $messageManager,
         ProductRepositoryInterface $productRepository,
-        AttributeSelector $attributeSelector
+        AttributeSelector $attributeSelector,
+        ScopeConfigInterface $scopeConfig,
+        SearchCriteriaBuilder $searchCriteriaBuilder
     ) {
         $this->importerFactory                          = $importerFactory;
         $this->importConfig                             = $importConfig;
         $this->messageManager                           = $messageManager;
         $this->productRepository                        = $productRepository;
         $this->attributeSelector                        = $attributeSelector;
+        $this->scopeConfig                              = $scopeConfig;
+        $this->searchCriteriaBuilder                    = $searchCriteriaBuilder;
         $this->attributes                               = $this->attributeSelector->getAttributes();
         $this->selectAttributes                         = $this->attributeSelector->getSelectAttributes();
         $this->importConfig->autoCreateOptionAttributes = array_values($this->selectAttributes);
@@ -105,9 +125,19 @@ class ImportProduct
     {
         $importer = $this->importerFactory->createImporter($this->importConfig);
 
+
+        $keyAttribute = $this->scopeConfig->getValue(self::XML_MICRODESIGN_ATTRIBUTE);
+        if ($keyAttribute && $keyAttribute != 'sku') {
+            $data = $this->addSkuToData($data, $keyAttribute);
+        }
+
         if (!$this->validateAttributes($data)) {
             return false;
         }
+
+        // Check if key is sku if true skip
+
+        // if != sku get sku from attribute
 
         foreach ($data as $product) {
             if (!isset($product['sku'])) {
@@ -208,7 +238,7 @@ class ImportProduct
             return false;
         }
         $wrongAttributes = [];
-        foreach (array_keys($data[0]) as $attribute) {
+        foreach (array_keys(reset($data)) as $attribute) {
             $attribute = explode('|', $attribute)[0];
             if (!in_array($attribute, $this->attributes)) {
                 $wrongAttributes[] = $attribute;
@@ -228,5 +258,39 @@ class ImportProduct
                 "All attributes validated!"
             );
         return true;
+    }
+
+    private function addSkuToData(array $data, $keyAttribute)
+    {
+        $keyValues = array_map( function($array) use ($keyAttribute) {
+            $keyAttribute = strtolower($keyAttribute);
+            return isset($array[$keyAttribute]) ? $array[$keyAttribute] : null;
+        }, $data);
+        // Filter un-found attributes
+        $keyValues = array_filter($keyValues, function($array) { return $array; });
+
+        $searchProducts = $this->searchCriteriaBuilder
+            ->addFilter($keyAttribute, array_values($keyValues), 'IN')
+            ->create();
+
+        $products = $this->productRepository->getList($searchProducts);
+        $attributeSkuCombination = [];
+        foreach ($products->getItems() as $product) {
+            $attributeSkuCombination[$product->getData($keyAttribute)] = $product->getSku();
+        }
+
+        foreach($data as $key => $dataProduct) {
+            if (isset($attributeSkuCombination[$dataProduct[$keyAttribute]])) {
+                $data[$key]['sku'] = $attributeSkuCombination[$dataProduct[$keyAttribute]];
+            } else {
+                $this->messageManager
+                    ->addErrorMessage(
+                        "Product with attribute " . $keyAttribute . " and value ". $data[$key][$keyAttribute] . " not found"
+                    );
+                unset($data[$key]);
+            }
+        }
+
+        return $data;
     }
 }

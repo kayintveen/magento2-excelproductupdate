@@ -85,6 +85,11 @@ class ParseCsv
         while ($data = fgetcsv($handler, 0, $delimiter)) {
             $row = [];
             foreach ($header as $i => $key) {
+                $key = strtolower($key);
+                // Skip empty columns
+                if ($key == '') {
+                    continue;
+                }
                 $row[$key] = $data[$i];
             }
             $result[] = $row;

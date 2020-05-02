@@ -11,7 +11,7 @@ use Microdesign\ExcelProductUpdate\Service\ProductSelector;
 
 class Product extends Action
 {
-    const XML_MICRODESIGN_ATTRIBUTES = 'microdesign/product/import_attributes';
+    const XML_MICRODESIGN_ATTRIBUTES = 'microdesign/export/attributes';
     const XML_MICRODESIGN_ONLY_CONFIGURABLE = 'microdesign/export/configurable';
 
     /**
