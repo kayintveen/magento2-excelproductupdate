@@ -77,7 +77,7 @@ class ParseCsv
             throw new Exception("CSV not found", 500, null);
         }
 
-        $handler   = fopen($filePath, 'r');
+        $handler   = $this->utf8_fopen_read($filePath);
         $result    = [];
         $delimiter = $this->detectDelimiter($handler);
         $header    = fgetcsv($handler, 0, $delimiter);
@@ -96,6 +96,19 @@ class ParseCsv
         }
 
         return $result;
+    }
+
+    /**
+     * @param string $fileName
+     *
+     * @return false|resource
+     */
+    private function utf8_fopen_read(string $fileName) {
+        $fc = iconv('windows-1250', 'utf-8', file_get_contents($fileName));
+        $handle=fopen("php://memory", "rw");
+        fwrite($handle, $fc);
+        fseek($handle, 0);
+        return $handle;
     }
 
     /**
